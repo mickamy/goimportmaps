@@ -39,7 +39,7 @@ func init() {
 	cmd.AddCommand(graph.Cmd)
 	cmd.AddCommand(version.Cmd)
 
-	cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text, mermaid or graphviz)")
+	cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text, mermaid, graphviz or html)")
 }
 
 func Run(cfg *config.Config, pattern string) error {
