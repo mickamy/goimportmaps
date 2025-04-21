@@ -9,6 +9,10 @@ import (
 	"github.com/mickamy/goimportmaps"
 )
 
+const (
+	path = ".goimportmaps.yaml"
+)
+
 type Rule struct {
 	From string `yaml:"from"`
 	To   string `yaml:"to"`
@@ -18,7 +22,11 @@ type Config struct {
 	Forbidden []Rule `yaml:"forbidden"`
 }
 
-func Load(path string) (Config, error) {
+func Load() (Config, error) {
+	return LoadByPath(path)
+}
+
+func LoadByPath(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return Config{}, fmt.Errorf("failed to read config file: %w", err)
@@ -32,6 +40,8 @@ func Load(path string) (Config, error) {
 	return cfg, nil
 }
 
+// Validate checks the import graph against forbidden rules.
+// It returns a slice of human-readable violation messages.
 func (c Config) Validate(graph goimportmaps.Graph) []string {
 	var violations []string
 

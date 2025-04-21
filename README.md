@@ -42,10 +42,9 @@ goimportmaps ./internal/...
 
 ### Options
 
-| Option                        | Description                                              |
-|-------------------------------|----------------------------------------------------------|
-| `--format=mermaid`            | Output format: `mermaid`, `html`, or `graphviz`          |
-| `--config=.goimportmaps.yaml` | Load forbidden rules from a config file                  |
+| Option                        | Description                                             |
+|-------------------------------|---------------------------------------------------------|
+| `--format=mermaid`            | Output format: `text`, `mermaid`, `html`, or `graphviz` |
 
 ## Example
 
