@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"gopkg.in/yaml.v3"
 
@@ -16,6 +17,9 @@ const (
 type Rule struct {
 	From string `yaml:"from"`
 	To   string `yaml:"to"`
+
+	CompiledFrom *regexp.Regexp `yaml:"-"`
+	CompiledTo   *regexp.Regexp `yaml:"-"`
 }
 
 type Config struct {
@@ -37,6 +41,17 @@ func LoadByPath(path string) (*Config, error) {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
+	for i := range cfg.Forbidden {
+		rule := &cfg.Forbidden[i]
+
+		if rule.CompiledFrom, err = regexp.Compile(rule.From); err != nil {
+			return nil, fmt.Errorf("invalid from regex `%q: %w`", rule.From, err)
+		}
+		if rule.CompiledTo, err = regexp.Compile(rule.To); err != nil {
+			return nil, fmt.Errorf("invalid to regex `%q: %w`", rule.To, err)
+		}
+	}
+
 	return &cfg, nil
 }
 
@@ -46,12 +61,15 @@ func (c *Config) Validate(graph goimportmaps.Graph) []string {
 	var violations []string
 
 	for _, rule := range c.Forbidden {
-		imports, ok := graph[rule.From]
-		if !ok {
-			continue
-		}
-		for _, to := range imports {
-			if to == rule.To {
+		for from, imports := range graph {
+			if !rule.CompiledFrom.MatchString(from) {
+				continue
+			}
+
+			for _, to := range imports {
+				if !rule.CompiledTo.MatchString(to) {
+					continue
+				}
 				violations = append(violations,
 					fmt.Sprintf("🚨 Violation: %s imports %s", rule.From, rule.To),
 				)
