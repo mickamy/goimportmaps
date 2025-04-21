@@ -22,27 +22,27 @@ type Config struct {
 	Forbidden []Rule `yaml:"forbidden"`
 }
 
-func Load() (Config, error) {
+func Load() (*Config, error) {
 	return LoadByPath(path)
 }
 
-func LoadByPath(path string) (Config, error) {
+func LoadByPath(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to read config file: %w", err)
+		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return Config{}, fmt.Errorf("invalid config format: %w", err)
+		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }
 
 // Validate checks the import graph against forbidden rules.
 // It returns a slice of human-readable violation messages.
-func (c Config) Validate(graph goimportmaps.Graph) []string {
+func (c *Config) Validate(graph goimportmaps.Graph) []string {
 	var violations []string
 
 	for _, rule := range c.Forbidden {
