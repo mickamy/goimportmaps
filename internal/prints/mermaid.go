@@ -1,4 +1,4 @@
-package graph
+package prints
 
 import (
 	"fmt"
@@ -8,8 +8,7 @@ import (
 	"github.com/mickamy/goimportmaps"
 )
 
-// RenderMermaid generates a Mermaid diagram from the import graph.
-func RenderMermaid(w io.Writer, imports goimportmaps.Graph) error {
+func Mermaid(w io.Writer, imports goimportmaps.Graph) {
 	_, _ = fmt.Fprintln(w, "```mermaid")
 	_, _ = fmt.Fprintln(w, "graph TD")
 
@@ -29,5 +28,4 @@ func RenderMermaid(w io.Writer, imports goimportmaps.Graph) error {
 	}
 
 	_, _ = fmt.Fprintln(w, "```")
-	return nil
 }

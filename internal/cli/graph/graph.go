@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/mickamy/goimportmaps/internal/graph"
 	"github.com/mickamy/goimportmaps/internal/parser"
+	"github.com/mickamy/goimportmaps/internal/prints"
 )
 
 var (
@@ -41,17 +41,10 @@ func Run(pattern string, format string) error {
 
 	switch format {
 	case "text":
-		for from, toList := range data {
-			for _, to := range toList {
-				fmt.Printf("%s -> %s\n", from, to)
-			}
-		}
+		prints.Text(os.Stdout, data)
 		return nil
 	case "mermaid":
-		if err = graph.RenderMermaid(os.Stdout, data); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
+		prints.Mermaid(os.Stdout, data)
 		return nil
 	default:
 		return fmt.Errorf("unsupported format %s", format)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/mickamy/goimportmaps/internal/cli/check"
 	"github.com/mickamy/goimportmaps/internal/cli/graph"
 	"github.com/mickamy/goimportmaps/internal/cli/version"
 )
@@ -19,6 +20,7 @@ in formats like Mermaid, Graphviz, or HTML.`,
 }
 
 func init() {
+	cmd.AddCommand(check.Cmd)
 	cmd.AddCommand(graph.Cmd)
 	cmd.AddCommand(version.Cmd)
 }
