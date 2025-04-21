@@ -5,11 +5,11 @@ import (
 	"io"
 	"sort"
 
-	"github.com/mickamy/goimportmaps/internal/parser"
+	"github.com/mickamy/goimportmaps"
 )
 
 // RenderMermaid generates a Mermaid diagram from the import graph.
-func RenderMermaid(w io.Writer, imports parser.ImportGraph) error {
+func RenderMermaid(w io.Writer, imports goimportmaps.Graph) error {
 	_, _ = fmt.Fprintln(w, "```mermaid")
 	_, _ = fmt.Fprintln(w, "graph TD")
 

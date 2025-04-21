@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	"golang.org/x/tools/go/packages"
+
+	"github.com/mickamy/goimportmaps"
 )
 
-// ImportGraph maps package -> list of imported packages
-type ImportGraph map[string][]string
-
 // ExtractImports loads Go packages and extracts import relationships.
-func ExtractImports(pattern string) (ImportGraph, error) {
+func ExtractImports(pattern string) (goimportmaps.Graph, error) {
 	cfg := &packages.Config{
 		Mode: packages.NeedName | packages.NeedImports | packages.NeedDeps | packages.NeedModule,
 	}
@@ -20,7 +19,7 @@ func ExtractImports(pattern string) (ImportGraph, error) {
 		return nil, fmt.Errorf("failed to load packages: %w", err)
 	}
 
-	graph := make(ImportGraph)
+	graph := make(goimportmaps.Graph)
 
 	for _, pkg := range pkgs {
 		if pkg.PkgPath == "" {
