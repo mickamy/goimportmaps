@@ -1,0 +1,35 @@
+version: 2
+project_name: goimportmaps
+release:
+  github:
+    owner: mickamy
+    name: goimportmaps
+  draft: false
+  prerelease: "false"
+
+builds:
+  - id: goimportmaps
+    main: ./cmd/goimportmaps/main.go
+    goos: [ darwin, linux, windows ]
+    goarch: [ amd64, arm64 ]
+    ldflags:
+      - "-X github.com/mickamy/goimportmaps/internal/cli/version/version.version={{.Version}}"
+    binary: goimportmaps
+
+archives:
+  - formats: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: desc
+  filters:
+    exclude:
+      - '^chore:'
+      - '^docs:'
+      - '^test:'
