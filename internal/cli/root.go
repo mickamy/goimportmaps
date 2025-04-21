@@ -39,7 +39,7 @@ func init() {
 	cmd.AddCommand(graph.Cmd)
 	cmd.AddCommand(version.Cmd)
 
-	cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text or mermaid)")
+	cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text, mermaid or graphviz)")
 }
 
 func Run(cfg *config.Config, pattern string) error {
@@ -54,6 +54,8 @@ func Run(cfg *config.Config, pattern string) error {
 		prints.Text(os.Stdout, data)
 	case "mermaid":
 		prints.Mermaid(os.Stdout, data)
+	case "graphviz":
+		prints.Graphviz(os.Stdout, data)
 	default:
 		return fmt.Errorf("unsupported format %s", format)
 	}

@@ -29,7 +29,7 @@ This is useful for understanding the structure of your project and preparing for
 }
 
 func init() {
-	Cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text or mermaid)")
+	Cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text, mermaid or graphviz)")
 }
 
 func Run(pattern string, format string) error {
@@ -42,11 +42,13 @@ func Run(pattern string, format string) error {
 	switch format {
 	case "text":
 		prints.Text(os.Stdout, data)
-		return nil
 	case "mermaid":
 		prints.Mermaid(os.Stdout, data)
-		return nil
+	case "graphviz":
+		prints.Graphviz(os.Stdout, data)
 	default:
 		return fmt.Errorf("unsupported format %s", format)
 	}
+
+	return nil
 }
