@@ -49,23 +49,28 @@ func Run(cfg *config.Config, pattern string) error {
 		os.Exit(1)
 	}
 
+	violations := cfg.Validate(data)
+
 	switch format {
 	case "text":
 		prints.Text(os.Stdout, data)
 	case "mermaid":
-		prints.Mermaid(os.Stdout, data)
+		prints.Mermaid(os.Stdout, data, violations)
 	case "graphviz":
 		prints.Graphviz(os.Stdout, data)
+	case "html":
+		if err := prints.HTML(os.Stdout, data, violations); err != nil {
+			fmt.Printf("error: %v\n", err)
+			os.Exit(1)
+		}
 	default:
 		return fmt.Errorf("unsupported format %s", format)
 	}
 
-	violations := cfg.Validate(data)
 	if len(violations) > 0 {
 		for _, violation := range violations {
-			_, _ = fmt.Fprintln(os.Stderr, violation)
+			_, _ = fmt.Fprintln(os.Stderr, "🚨 Violation:", violation.Message)
 		}
-		os.Exit(1)
 	}
 
 	return nil

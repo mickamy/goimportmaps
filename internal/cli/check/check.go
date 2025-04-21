@@ -39,7 +39,7 @@ func Run(cfg *config.Config, pattern string) {
 	violations := cfg.Validate(data)
 	if len(violations) > 0 {
 		for _, violation := range violations {
-			_, _ = fmt.Fprintln(os.Stderr, violation)
+			_, _ = fmt.Fprintln(os.Stderr, "🚨 Violation:", violation.Message)
 		}
 		os.Exit(1)
 	}

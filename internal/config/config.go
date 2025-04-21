@@ -55,10 +55,16 @@ func LoadByPath(path string) (*Config, error) {
 	return &cfg, nil
 }
 
+type Violation struct {
+	From    string
+	To      string
+	Message string
+}
+
 // Validate checks the import graph against forbidden rules.
 // It returns a slice of human-readable violation messages.
-func (c *Config) Validate(graph goimportmaps.Graph) []string {
-	var violations []string
+func (c *Config) Validate(graph goimportmaps.Graph) []Violation {
+	var violations []Violation
 
 	for _, rule := range c.Forbidden {
 		for from, imports := range graph {
@@ -70,9 +76,11 @@ func (c *Config) Validate(graph goimportmaps.Graph) []string {
 				if !rule.CompiledTo.MatchString(to) {
 					continue
 				}
-				violations = append(violations,
-					fmt.Sprintf("🚨 Violation: %s imports %s", rule.From, rule.To),
-				)
+				violations = append(violations, Violation{
+					From:    from,
+					To:      to,
+					Message: fmt.Sprintf("%s imports %s (matched rule: %s → %s)", from, to, rule.From, rule.To),
+				})
 			}
 		}
 	}

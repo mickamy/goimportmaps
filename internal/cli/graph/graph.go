@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/mickamy/goimportmaps/internal/config"
 	"github.com/mickamy/goimportmaps/internal/parser"
 	"github.com/mickamy/goimportmaps/internal/prints"
 )
@@ -43,11 +44,11 @@ func Run(pattern string, format string) error {
 	case "text":
 		prints.Text(os.Stdout, data)
 	case "mermaid":
-		prints.Mermaid(os.Stdout, data)
+		prints.Mermaid(os.Stdout, data, []config.Violation{})
 	case "graphviz":
 		prints.Graphviz(os.Stdout, data)
 	case "html":
-		if err := prints.HTML(os.Stdout, data); err != nil {
+		if err := prints.HTML(os.Stdout, data, []config.Violation{}); err != nil {
 			fmt.Printf("error: %v\n", err)
 			os.Exit(1)
 		}
