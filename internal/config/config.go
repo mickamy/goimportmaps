@@ -15,11 +15,11 @@ const (
 )
 
 type Rule struct {
-	From string `yaml:"from"`
-	To   string `yaml:"to"`
+	Source  string   `yaml:"source"`
+	Imports []string `yaml:"imports"`
 
-	CompiledFrom *regexp.Regexp `yaml:"-"`
-	CompiledTo   *regexp.Regexp `yaml:"-"`
+	CompiledSource  *regexp.Regexp   `yaml:"-"`
+	CompiledImports []*regexp.Regexp `yaml:"-"`
 }
 
 type Config struct {
@@ -44,11 +44,15 @@ func LoadByPath(path string) (*Config, error) {
 	for i := range cfg.Forbidden {
 		rule := &cfg.Forbidden[i]
 
-		if rule.CompiledFrom, err = regexp.Compile(rule.From); err != nil {
-			return nil, fmt.Errorf("invalid from regex `%q: %w`", rule.From, err)
+		if rule.CompiledSource, err = regexp.Compile(rule.Source); err != nil {
+			return nil, fmt.Errorf("invalid from regex `%q: %w`", rule.Source, err)
 		}
-		if rule.CompiledTo, err = regexp.Compile(rule.To); err != nil {
-			return nil, fmt.Errorf("invalid to regex `%q: %w`", rule.To, err)
+		for _, imprt := range rule.Imports {
+			imprtRegexp, err := regexp.Compile(imprt)
+			if err != nil {
+				return nil, fmt.Errorf("invalid to regex `%q: %w`", rule.Imports, err)
+			}
+			rule.CompiledImports = append(rule.CompiledImports, imprtRegexp)
 		}
 	}
 
@@ -67,20 +71,22 @@ func (c *Config) Validate(graph goimportmaps.Graph) []Violation {
 	var violations []Violation
 
 	for _, rule := range c.Forbidden {
-		for from, imports := range graph {
-			if !rule.CompiledFrom.MatchString(from) {
+		for source, imports := range graph {
+			if !rule.CompiledSource.MatchString(source) {
 				continue
 			}
 
-			for _, to := range imports {
-				if !rule.CompiledTo.MatchString(to) {
-					continue
+			for _, imprt := range imports {
+				for _, imprtRegexp := range rule.CompiledImports {
+					if !imprtRegexp.MatchString(imprt) {
+						continue
+					}
+					violations = append(violations, Violation{
+						From:    source,
+						To:      imprtRegexp.String(),
+						Message: fmt.Sprintf("%s imports %s (matched rule: %s → %s)", source, imprt, rule.Source, imprtRegexp.String()),
+					})
 				}
-				violations = append(violations, Violation{
-					From:    from,
-					To:      to,
-					Message: fmt.Sprintf("%s imports %s (matched rule: %s → %s)", from, to, rule.From, rule.To),
-				})
 			}
 		}
 	}
