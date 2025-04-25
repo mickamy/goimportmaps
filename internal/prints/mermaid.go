@@ -9,7 +9,7 @@ import (
 	"github.com/mickamy/goimportmaps/internal/config"
 )
 
-func Mermaid(w io.Writer, graph goimportmaps.Graph, violations []config.Violation) {
+func Mermaid(w io.Writer, graph goimportmaps.Graph, modulePath string, violations []config.Violation) {
 	_, _ = fmt.Fprintln(w, "```mermaid")
 	_, _ = fmt.Fprintln(w, "graph TD")
 
@@ -31,6 +31,8 @@ func Mermaid(w io.Writer, graph goimportmaps.Graph, violations []config.Violatio
 		toList := graph[from]
 		sort.Strings(toList)
 		for _, to := range toList {
+			from = Shorten(from, modulePath)
+			to = Shorten(to, modulePath)
 			if violationMap[from][to] {
 				_, _ = fmt.Fprintf(w, "  %s --> %s %% ❌ Violation\n", from, to)
 			} else {

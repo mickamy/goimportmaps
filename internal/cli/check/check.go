@@ -32,7 +32,7 @@ If any violations are found, they will be printed to stderr and the program will
 func Run(cfg *config.Config, pattern string) {
 	data, err := parser.ExtractImports(pattern)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		fmt.Printf("error: %v\n", err)
 		os.Exit(1)
 	}
 

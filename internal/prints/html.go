@@ -16,7 +16,7 @@ import (
 //go:embed template.html
 var htmlTemplate string
 
-func HTML(w io.Writer, graph goimportmaps.Graph, violations []config.Violation) error {
+func HTML(w io.Writer, graph goimportmaps.Graph, modulePath string, violations []config.Violation) error {
 	var buf bytes.Buffer
 	buf.WriteString("graph TD\n")
 
@@ -32,6 +32,8 @@ func HTML(w io.Writer, graph goimportmaps.Graph, violations []config.Violation) 
 		toList := graph[from]
 		sort.Strings(toList)
 		for _, to := range toList {
+			from = Shorten(from, modulePath)
+			to = Shorten(to, modulePath)
 			_, _ = fmt.Fprintf(&buf, "  %s --> %s\n", from, to)
 		}
 	}

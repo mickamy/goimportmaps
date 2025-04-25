@@ -8,7 +8,7 @@ import (
 	"github.com/mickamy/goimportmaps"
 )
 
-func Graphviz(w io.Writer, graph goimportmaps.Graph) {
+func Graphviz(w io.Writer, graph goimportmaps.Graph, modulePath string) {
 	_, _ = fmt.Fprintln(w, "digraph G {")
 
 	keys := make([]string, 0, len(graph))
@@ -21,6 +21,8 @@ func Graphviz(w io.Writer, graph goimportmaps.Graph) {
 		toList := graph[from]
 		sort.Strings(toList)
 		for _, to := range toList {
+			from = Shorten(from, modulePath)
+			to = Shorten(to, modulePath)
 			_, _ = fmt.Fprintf(w, "  %q -> %q;\n", from, to)
 		}
 	}

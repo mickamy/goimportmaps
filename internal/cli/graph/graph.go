@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mickamy/goimportmaps/internal/config"
+	"github.com/mickamy/goimportmaps/internal/module"
 	"github.com/mickamy/goimportmaps/internal/parser"
 	"github.com/mickamy/goimportmaps/internal/prints"
 )
@@ -36,19 +37,25 @@ func init() {
 func Run(pattern string, format string) error {
 	data, err := parser.ExtractImports(pattern)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		fmt.Printf("error: %v\n", err)
+		os.Exit(1)
+	}
+
+	modulePath, err := module.Path()
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
 		os.Exit(1)
 	}
 
 	switch format {
 	case "text":
-		prints.Text(os.Stdout, data)
+		prints.Text(os.Stdout, data, modulePath)
 	case "mermaid":
-		prints.Mermaid(os.Stdout, data, []config.Violation{})
+		prints.Mermaid(os.Stdout, data, modulePath, []config.Violation{})
 	case "graphviz":
-		prints.Graphviz(os.Stdout, data)
+		prints.Graphviz(os.Stdout, data, modulePath)
 	case "html":
-		if err := prints.HTML(os.Stdout, data, []config.Violation{}); err != nil {
+		if err := prints.HTML(os.Stdout, data, modulePath, []config.Violation{}); err != nil {
 			fmt.Printf("error: %v\n", err)
 			os.Exit(1)
 		}

@@ -10,6 +10,7 @@ import (
 	"github.com/mickamy/goimportmaps/internal/cli/graph"
 	"github.com/mickamy/goimportmaps/internal/cli/version"
 	"github.com/mickamy/goimportmaps/internal/config"
+	"github.com/mickamy/goimportmaps/internal/module"
 	"github.com/mickamy/goimportmaps/internal/parser"
 	"github.com/mickamy/goimportmaps/internal/prints"
 )
@@ -45,7 +46,13 @@ func init() {
 func Run(cfg *config.Config, pattern string) error {
 	data, err := parser.ExtractImports(pattern)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		fmt.Printf("error: %v\n", err)
+		os.Exit(1)
+	}
+
+	modulePath, err := module.Path()
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -53,13 +60,13 @@ func Run(cfg *config.Config, pattern string) error {
 
 	switch format {
 	case "text":
-		prints.Text(os.Stdout, data)
+		prints.Text(os.Stdout, data, modulePath)
 	case "mermaid":
-		prints.Mermaid(os.Stdout, data, violations)
+		prints.Mermaid(os.Stdout, data, modulePath, violations)
 	case "graphviz":
-		prints.Graphviz(os.Stdout, data)
+		prints.Graphviz(os.Stdout, data, modulePath)
 	case "html":
-		if err := prints.HTML(os.Stdout, data, violations); err != nil {
+		if err := prints.HTML(os.Stdout, data, modulePath, violations); err != nil {
 			fmt.Printf("error: %v\n", err)
 			os.Exit(1)
 		}
