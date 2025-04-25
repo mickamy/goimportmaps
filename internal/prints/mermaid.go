@@ -15,10 +15,10 @@ func Mermaid(w io.Writer, graph goimportmaps.Graph, modulePath string, violation
 
 	violationMap := make(map[string]map[string]bool)
 	for _, v := range violations {
-		if violationMap[v.From] == nil {
-			violationMap[v.From] = make(map[string]bool)
+		if violationMap[v.Source] == nil {
+			violationMap[v.Source] = make(map[string]bool)
 		}
-		violationMap[v.From][v.To] = true
+		violationMap[v.Source][v.Import] = true
 	}
 
 	keys := make([]string, 0, len(graph))

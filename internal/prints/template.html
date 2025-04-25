@@ -37,6 +37,9 @@
 </head>
 <body>
 <h1>📦 Go Import Graph</h1>
+{{ if .ViolationCount }}
+<p>🚨 {{ .ViolationCount }} violation(s) found</p>
+{{ end }}
 <div class="mermaid">
     {{ .Graph }}
 </div>

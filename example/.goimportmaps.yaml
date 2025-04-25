@@ -1,4 +1,4 @@
 forbidden:
-  - source: ^github.com/mickamy/goimportmaps-example/internal/.*/handler$
+  - source: github.com/mickamy/goimportmaps-example/internal/.*/handler$
     imports:
-      - ^github.com/mickamy/goimportmaps-example/internal/.*/repository$
+      - github.com/mickamy/goimportmaps-example/internal/.*/repository$

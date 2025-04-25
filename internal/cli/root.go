@@ -75,6 +75,8 @@ func Run(cfg *config.Config, pattern string) error {
 	}
 
 	if len(violations) > 0 {
+		_, _ = fmt.Fprintf(os.Stderr, "\n🚨 %d violation(s) found\n\n", len(violations))
+
 		for _, violation := range violations {
 			_, _ = fmt.Fprintln(os.Stderr, "🚨 Violation:", violation.Message)
 		}

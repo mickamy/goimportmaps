@@ -60,8 +60,8 @@ func LoadByPath(path string) (*Config, error) {
 }
 
 type Violation struct {
-	From    string
-	To      string
+	Source  string
+	Import  string
 	Message string
 }
 
@@ -82,8 +82,8 @@ func (c *Config) Validate(graph goimportmaps.Graph) []Violation {
 						continue
 					}
 					violations = append(violations, Violation{
-						From:    source,
-						To:      imprtRegexp.String(),
+						Source:  source,
+						Import:  imprtRegexp.String(),
 						Message: fmt.Sprintf("%s imports %s (matched rule: %s → %s)", source, imprt, rule.Source, imprtRegexp.String()),
 					})
 				}

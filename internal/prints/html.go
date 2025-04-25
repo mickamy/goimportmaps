@@ -39,12 +39,12 @@ func HTML(w io.Writer, graph goimportmaps.Graph, modulePath string, violations [
 	}
 
 	for _, v := range violations {
-		violationSet[v.From] = true
-		violationSet[v.To] = true
+		violationSet[Shorten(v.Source, modulePath)] = true
+		violationSet[Shorten(v.Import, modulePath)] = true
 	}
 
 	if len(violationSet) > 0 {
-		buf.WriteString("  classDef violation stroke:#f00,stroke-width:12px;\n")
+		buf.WriteString("  classDef violation stroke:#f00,stroke-width:4px;\n")
 
 		nodes := make([]string, 0, len(violationSet))
 		for n := range violationSet {
@@ -62,9 +62,17 @@ func HTML(w io.Writer, graph goimportmaps.Graph, modulePath string, violations [
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 
-	if err := tmpl.Execute(w, struct{ Graph string }{Graph: buf.String()}); err != nil {
+	if err := tmpl.Execute(w, htmlTemplateData{
+		Graph:          buf.String(),
+		ViolationCount: len(violations),
+	}); err != nil {
 		return fmt.Errorf("failed to execute template: %w", err)
 	}
 
 	return nil
+}
+
+type htmlTemplateData struct {
+	Graph          string
+	ViolationCount int
 }
