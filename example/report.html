@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Go Import Graph</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.0/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true });</script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f9fafb;
+            color: #111;
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        .mermaid {
+            background: #fff;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .mermaid {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>📦 Go Import Graph</h1>
+
+<p>🚨 1 violation(s) found</p>
+
+<div class="mermaid">
+    graph TD
+  internal/insanity/handler --&gt; internal/insanity/repository
+  internal/insanity/handler --&gt; net/http
+  internal/insanity/repository --&gt; internal/sanity/model
+  internal/sanity/handler --&gt; internal/sanity/usecase
+  internal/sanity/handler --&gt; net/http
+  internal/sanity/repository --&gt; internal/sanity/model
+  internal/sanity/usecase --&gt; internal/sanity/model
+  internal/sanity/usecase --&gt; internal/sanity/repository
+  classDef violation stroke:#f00,stroke-width:2px;
+  class internal/.*/repository$,internal/insanity/handler violation;
+
+</div>
+</body>
+</html>
