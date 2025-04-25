@@ -1,6 +1,9 @@
 # goimportmaps
 
 > Visualize and validate package dependencies in your Go project.
+>
+
+![Screenshot](./assets/html_report.png)
 
 ## Overview
 
@@ -22,10 +25,10 @@ undesired package-level coupling.
 
 ```bash
 # Install goimportmaps into your project
-go get -tool github.com/mickamy/goimportmaps@latest
+go get -tool github.com/mickamy/goimportmaps/cmd/goimportmaps@latest
 
 # or install it globally
-go install github.com/mickamy/goimportmaps@latest
+go install github.com/mickamy/goimportmaps/cmd/goimportmaps@latest
 ```
 
 ## Usage
@@ -42,9 +45,9 @@ goimportmaps ./internal/...
 
 ### Options
 
-| Option                        | Description                                             |
-|-------------------------------|---------------------------------------------------------|
-| `--format=mermaid`            | Output format: `text`, `mermaid`, `html`, or `graphviz` |
+| Option                       | Description                                             |
+|------------------------------|---------------------------------------------------------|
+| `--format`                   | Output format: `text`, `mermaid`, `html`, or `graphviz` |
 
 ## Example
 
@@ -63,21 +66,19 @@ main
 If `handler` imports `infra` directly, the tool will detect:
 
 ```bash
-🚨 Violation detected: handler imports infra
-🛠️  Fix: handler should depend on service, not infra directly
+🚨 1 violation(s) found
+
+🚨 Violation: github.com/your/project/internal/handler imports github.com/your/project/internal/infra
 ```
 
 ### Mermaid Output
 
 ```
-```mermaid
 graph TD
   main --> handler
   handler --> service
   service --> infra
   handler --> infra %% ❌
-```
-
 ```
 
 ## Configuration
@@ -86,10 +87,12 @@ graph TD
 
 ```yaml
 forbidden:
-  - from: handler
-    to: infra
-  - from: app
-    to: db
+  - source github.com/your/project/handler
+    imports: 
+      - github.com/your/project/infra
+  - source: github.com/your/project/app
+    imports: 
+      - github.com/your/project/db
 ```
 
 ## HTML Output
