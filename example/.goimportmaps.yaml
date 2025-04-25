@@ -1,0 +1,3 @@
+forbidden:
+  - from: ^github.com/mickamy/goimportmaps-example/internal/.*/handler$
+    to: ^github.com/mickamy/goimportmaps-example/internal/.*/repository$
