@@ -16,3 +16,7 @@ func Path() (string, error) {
 	}
 	return strings.TrimSpace(out.String()), nil
 }
+
+func IsStdlib(path string) bool {
+	return !strings.Contains(path, ".")
+}

@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/mickamy/goimportmaps"
+	"github.com/mickamy/goimportmaps/internal/module"
 )
 
 type Mode string
@@ -33,6 +34,7 @@ const (
 type Rule struct {
 	Source  string   `yaml:"source"`
 	Imports []string `yaml:"imports"`
+	Stdlib  *bool    `yaml:"stdlib,omitempty"`
 
 	CompiledSource  *regexp.Regexp   `yaml:"-"`
 	CompiledImports []*regexp.Regexp `yaml:"-"`
@@ -147,7 +149,17 @@ func (c *Config) ValidateAllowed(graph goimportmaps.Graph) []Violation {
 			if !rule.CompiledSource.MatchString(source) {
 				continue
 			}
+
+			allowStdlib := true
+			if rule.Stdlib != nil {
+				allowStdlib = *rule.Stdlib
+			}
+
 			for _, imprt := range imports {
+				if module.IsStdlib(imprt) && allowStdlib {
+					continue
+				}
+
 				matched := false
 				for _, imprtRegexp := range rule.CompiledImports {
 					if imprtRegexp.MatchString(imprt) {
