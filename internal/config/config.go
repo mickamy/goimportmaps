@@ -143,24 +143,24 @@ func (c *Config) ValidateAllowed(graph goimportmaps.Graph) []Violation {
 	var violations []Violation
 
 	for source, imports := range graph {
-		allowed := false
+		for _, imprt := range imports {
+			matched := false
 
-		for _, rule := range c.Allowed {
-			if !rule.CompiledSource.MatchString(source) {
-				continue
-			}
-
-			allowStdlib := true
-			if rule.Stdlib != nil {
-				allowStdlib = *rule.Stdlib
-			}
-
-			for _, imprt := range imports {
-				if module.IsStdlib(imprt) && allowStdlib {
+			for _, rule := range c.Allowed {
+				if !rule.CompiledSource.MatchString(source) {
 					continue
 				}
 
-				matched := false
+				allowStdlib := true
+				if rule.Stdlib != nil {
+					allowStdlib = *rule.Stdlib
+				}
+
+				if module.IsStdlib(imprt) && allowStdlib {
+					matched = true
+					break
+				}
+
 				for _, imprtRegexp := range rule.CompiledImports {
 					if imprtRegexp.MatchString(imprt) {
 						matched = true
@@ -168,19 +168,11 @@ func (c *Config) ValidateAllowed(graph goimportmaps.Graph) []Violation {
 					}
 				}
 				if matched {
-					allowed = true
-				} else {
-					violations = append(violations, Violation{
-						Source:  source,
-						Import:  imprt,
-						Message: fmt.Sprintf("%s imports %s, but no allowed rule matched", source, imprt),
-					})
+					break
 				}
 			}
-		}
 
-		if !allowed && len(imports) > 0 {
-			for _, imprt := range imports {
+			if !matched {
 				violations = append(violations, Violation{
 					Source:  source,
 					Import:  imprt,
