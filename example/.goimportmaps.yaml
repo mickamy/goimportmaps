@@ -1,4 +1,16 @@
 forbidden:
-  - source: github.com/mickamy/goimportmaps-example/internal/.*/handler$
+  - source: internal/.*/handler$
     imports:
-      - github.com/mickamy/goimportmaps-example/internal/.*/repository$
+      - internal/.*/repository$
+allow:
+  - source: internal/.*/handler$
+    imports:
+      - internal/.*/usecase$
+      - internal/.*/model$
+  - source: internal/.*/usecase$
+    imports:
+      - internal/.*/repository$
+      - internal/.*/model$
+  - source: internal/.*/repository$
+    imports:
+      - internal/.*/model$
