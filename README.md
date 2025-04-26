@@ -145,4 +145,4 @@ This report can be viewed in your browser or uploaded as a CI artifact.
 
 ## License
 
-[MIT](https://www.notion.so/LICENSE)
+[MIT](./LICENSE)
