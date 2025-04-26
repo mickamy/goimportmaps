@@ -71,7 +71,7 @@ func Run(cfg *config.Config, mode config.Mode, format prints.Format, pattern str
 		os.Exit(1)
 	}
 
-	violations := cfg.Validate(data, mode)
+	violations := cfg.Validate(data, mode, modulePath)
 
 	switch format {
 	case prints.FormatGraphviz:

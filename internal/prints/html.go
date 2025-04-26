@@ -11,6 +11,7 @@ import (
 
 	"github.com/mickamy/goimportmaps"
 	"github.com/mickamy/goimportmaps/internal/config"
+	"github.com/mickamy/goimportmaps/internal/module"
 )
 
 //go:embed template.html
@@ -32,15 +33,15 @@ func HTML(w io.Writer, graph goimportmaps.Graph, modulePath string, violations [
 		toList := graph[from]
 		sort.Strings(toList)
 		for _, to := range toList {
-			from = Shorten(from, modulePath)
-			to = Shorten(to, modulePath)
+			from = module.Shorten(from, modulePath)
+			to = module.Shorten(to, modulePath)
 			_, _ = fmt.Fprintf(&buf, "  %s --> %s\n", from, to)
 		}
 	}
 
 	for _, v := range violations {
-		violationSet[Shorten(v.Source, modulePath)] = true
-		violationSet[Shorten(v.Import, modulePath)] = true
+		violationSet[module.Shorten(v.Source, modulePath)] = true
+		violationSet[module.Shorten(v.Import, modulePath)] = true
 	}
 
 	if len(violationSet) > 0 {

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mickamy/goimportmaps/internal/config"
+	"github.com/mickamy/goimportmaps/internal/module"
 	"github.com/mickamy/goimportmaps/internal/parser"
 )
 
@@ -50,7 +51,13 @@ func Run(cfg *config.Config, mode config.Mode, pattern string) {
 		os.Exit(1)
 	}
 
-	violations := cfg.Validate(data, mode)
+	modulePath, err := module.Path()
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		os.Exit(1)
+	}
+
+	violations := cfg.Validate(data, mode, modulePath)
 	if len(violations) > 0 {
 		_, _ = fmt.Fprintf(os.Stderr, "\n🚨 %d violation(s) found\n\n", len(violations))
 

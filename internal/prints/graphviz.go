@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/mickamy/goimportmaps"
+	"github.com/mickamy/goimportmaps/internal/module"
 )
 
 func Graphviz(w io.Writer, graph goimportmaps.Graph, modulePath string) {
@@ -21,8 +22,8 @@ func Graphviz(w io.Writer, graph goimportmaps.Graph, modulePath string) {
 		toList := graph[from]
 		sort.Strings(toList)
 		for _, to := range toList {
-			from = Shorten(from, modulePath)
-			to = Shorten(to, modulePath)
+			from = module.Shorten(from, modulePath)
+			to = module.Shorten(to, modulePath)
 			_, _ = fmt.Fprintf(w, "  %q -> %q;\n", from, to)
 		}
 	}

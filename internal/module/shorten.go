@@ -1,4 +1,4 @@
-package prints
+package module
 
 import (
 	"strings"

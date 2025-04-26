@@ -101,18 +101,18 @@ type Violation struct {
 
 // Validate checks the import graph against forbidden rules.
 // It returns a slice of human-readable violation messages.
-func (c *Config) Validate(graph goimportmaps.Graph, mode Mode) []Violation {
+func (c *Config) Validate(graph goimportmaps.Graph, mode Mode, modulePath string) []Violation {
 	switch mode {
 	case ModeForbidden:
-		return c.ValidateForbidden(graph)
+		return c.ValidateForbidden(graph, modulePath)
 	case ModeAllowed:
-		return c.ValidateAllowed(graph)
+		return c.ValidateAllowed(graph, modulePath)
 	default:
 		panic(fmt.Errorf("invalid mode %s", mode))
 	}
 }
 
-func (c *Config) ValidateForbidden(graph goimportmaps.Graph) []Violation {
+func (c *Config) ValidateForbidden(graph goimportmaps.Graph, modulePath string) []Violation {
 	var violations []Violation
 
 	for _, rule := range c.Forbidden {
@@ -129,7 +129,7 @@ func (c *Config) ValidateForbidden(graph goimportmaps.Graph) []Violation {
 					violations = append(violations, Violation{
 						Source:  source,
 						Import:  imprtRegexp.String(),
-						Message: fmt.Sprintf("%s imports %s (matched rule: %s → %s)", source, imprt, rule.Source, imprtRegexp.String()),
+						Message: fmt.Sprintf("%s imports %s (matched rule: %s → %s)", module.Shorten(source, modulePath), module.Shorten(imprt, modulePath), rule.Source, imprtRegexp.String()),
 					})
 				}
 			}
@@ -139,7 +139,7 @@ func (c *Config) ValidateForbidden(graph goimportmaps.Graph) []Violation {
 	return violations
 }
 
-func (c *Config) ValidateAllowed(graph goimportmaps.Graph) []Violation {
+func (c *Config) ValidateAllowed(graph goimportmaps.Graph, modulePath string) []Violation {
 	var violations []Violation
 
 	for source, imports := range graph {
@@ -176,7 +176,7 @@ func (c *Config) ValidateAllowed(graph goimportmaps.Graph) []Violation {
 				violations = append(violations, Violation{
 					Source:  source,
 					Import:  imprt,
-					Message: fmt.Sprintf("%s imports %s, but no allowed rule matched", source, imprt),
+					Message: fmt.Sprintf("%s imports %s, but no allowed rule matched", module.Shorten(source, modulePath), module.Shorten(imprt, modulePath)),
 				})
 			}
 		}
