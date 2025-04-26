@@ -17,6 +17,7 @@ import (
 
 var (
 	format = "text"
+	mode   = "forbidden"
 )
 
 var cmd = &cobra.Command{
@@ -31,7 +32,20 @@ the architecture of your Go projects by analyzing internal package imports.`,
 			_, _ = fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
-		return Run(cfg, args[0])
+
+		mode, err := config.NewMode(mode)
+		if err != nil {
+			return err
+		}
+
+		format, err := prints.NewFormat(format)
+		if err != nil {
+			return err
+		}
+
+		Run(cfg, mode, format, args[0])
+
+		return nil
 	},
 }
 
@@ -41,9 +55,10 @@ func init() {
 	cmd.AddCommand(version.Cmd)
 
 	cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text, mermaid, graphviz or html)")
+	cmd.Flags().StringVarP(&mode, "mode", "m", "forbidden", "check mode (forbidden or allowed)")
 }
 
-func Run(cfg *config.Config, pattern string) error {
+func Run(cfg *config.Config, mode config.Mode, format prints.Format, pattern string) {
 	data, err := parser.ExtractImports(pattern)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
@@ -56,22 +71,20 @@ func Run(cfg *config.Config, pattern string) error {
 		os.Exit(1)
 	}
 
-	violations := cfg.Validate(data)
+	violations := cfg.Validate(data, mode)
 
 	switch format {
-	case "text":
-		prints.Text(os.Stdout, data, modulePath)
-	case "mermaid":
-		prints.Mermaid(os.Stdout, data, modulePath, violations)
-	case "graphviz":
+	case prints.FormatGraphviz:
 		prints.Graphviz(os.Stdout, data, modulePath)
-	case "html":
+	case prints.FormatHTML:
 		if err := prints.HTML(os.Stdout, data, modulePath, violations); err != nil {
 			fmt.Printf("error: %v\n", err)
 			os.Exit(1)
 		}
-	default:
-		return fmt.Errorf("unsupported format %s", format)
+	case prints.FormatMermaid:
+		prints.Mermaid(os.Stdout, data, modulePath, violations)
+	case prints.FormatText:
+		prints.Text(os.Stdout, data, modulePath)
 	}
 
 	if len(violations) > 0 {
@@ -81,8 +94,6 @@ func Run(cfg *config.Config, pattern string) error {
 			_, _ = fmt.Fprintln(os.Stderr, "🚨 Violation:", violation.Message)
 		}
 	}
-
-	return nil
 }
 
 func Execute() {

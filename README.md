@@ -8,7 +8,7 @@
 ## Overview
 
 `goimportmaps` is a CLI tool that analyzes your Go project's internal package imports, visualizes them as a dependency
-graph, and detects architectural violations like forbidden dependencies (e.g., `handler -> infra`).
+graph, and detects architectural violations like forbidden dependencies or unexpected imports.
 
 Ideal for large-scale or monorepo Go applications, this tool helps ensure architectural integrity by preventing
 undesired package-level coupling.
@@ -16,7 +16,8 @@ undesired package-level coupling.
 ## Features
 
 - 📊 Visualize internal package dependencies (Mermaid, Graphviz, HTML)
-- 🚨 Detect and report invalid imports based on custom rules
+- 🚨 Detect forbidden imports based on custom rules (`forbidden` mode)
+- 🛡 Enforce allowed imports strictly (`allowed` mode, whitelist style)
 - ✅ Output violations with actionable messages
 - 🔍 Highlight architectural drift in pull requests
 - 🧠 Perfect for layered, hexagonal, or clean architecture
@@ -45,9 +46,10 @@ goimportmaps ./internal/...
 
 ### Options
 
-| Option                       | Description                                             |
-|------------------------------|---------------------------------------------------------|
-| `--format`                   | Output format: `text`, `mermaid`, `html`, or `graphviz` |
+| Option     | Description                                             |
+|------------|---------------------------------------------------------|
+| `--format` | Output format: `text`, `mermaid`, `html`, or `graphviz` |
+| `--mode`   | Validation mode: `forbidden` (default) or `allowed`     |
 
 ## Example
 
@@ -63,6 +65,8 @@ main
     └── db.go
 ```
 
+### Forbidden Mode (default)
+
 If `handler` imports `infra` directly, the tool will detect:
 
 ```bash
@@ -71,9 +75,25 @@ If `handler` imports `infra` directly, the tool will detect:
 🚨 Violation: github.com/your/project/internal/handler imports github.com/your/project/internal/infra
 ```
 
-### Mermaid Output
+### Allowed Mode (strict whitelist)
 
+You can enforce exact allowed imports:
+
+```yaml
+allow:
+  - source: github.com/your/project/internal/handler
+    imports:
+      - github.com/your/project/internal/service
+    stdlib: true # allow importing standard library packages as well (default: true)
 ```
+
+If `handler` tries to import anything other than `service` or stdlib (e.g., `infra`), it will be flagged.
+
+---
+
+### Mermaid Output Example
+
+```markdown
 graph TD
   main --> handler
   handler --> service
@@ -81,18 +101,35 @@ graph TD
   handler --> infra %% ❌
 ```
 
+---
+
 ## Configuration
 
 `.goimportmaps.yaml`
 
+### Forbidden Mode Example
+
 ```yaml
 forbidden:
-  - source github.com/your/project/handler
-    imports: 
-      - github.com/your/project/infra
-  - source: github.com/your/project/app
-    imports: 
-      - github.com/your/project/db
+  - source: github.com/your/project/internal/handler
+    imports:
+      - github.com/your/project/internal/infra
+  - source: github.com/your/project/internal/app
+    imports:
+      - github.com/your/project/internal/db
+```
+
+### Allowed Mode Example
+
+```yaml
+allow:
+  - source: github.com/your/project/internal/handler
+    imports:
+      - github.com/your/project/internal/service
+  - source: github.com/your/project/internal/service
+    imports:
+      - github.com/your/project/internal/repository
+    stdlib: false
 ```
 
 ## HTML Output
@@ -101,10 +138,11 @@ Use `--format=html` to generate a standalone static report:
 
 ```bash
 goimportmaps ./... --format=html > report.html
+
 ```
 
 This report can be viewed in your browser or uploaded as a CI artifact.
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](https://www.notion.so/LICENSE)

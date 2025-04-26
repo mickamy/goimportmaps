@@ -26,7 +26,13 @@ Use it to inspect how packages depend on each other, or to generate raw dependen
 This is useful for understanding the structure of your project and preparing for visualization (e.g., Mermaid output).`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return Run(args[0], format)
+		format, err := prints.NewFormat(format)
+		if err != nil {
+			return err
+		}
+
+		Run(args[0], format)
+		return nil
 	},
 }
 
@@ -34,7 +40,7 @@ func init() {
 	Cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text, mermaid, graphviz or html)")
 }
 
-func Run(pattern string, format string) error {
+func Run(pattern string, format prints.Format) {
 	data, err := parser.ExtractImports(pattern)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
@@ -48,20 +54,16 @@ func Run(pattern string, format string) error {
 	}
 
 	switch format {
-	case "text":
-		prints.Text(os.Stdout, data, modulePath)
-	case "mermaid":
-		prints.Mermaid(os.Stdout, data, modulePath, []config.Violation{})
-	case "graphviz":
+	case prints.FormatGraphviz:
 		prints.Graphviz(os.Stdout, data, modulePath)
-	case "html":
+	case prints.FormatHTML:
 		if err := prints.HTML(os.Stdout, data, modulePath, []config.Violation{}); err != nil {
 			fmt.Printf("error: %v\n", err)
 			os.Exit(1)
 		}
-	default:
-		return fmt.Errorf("unsupported format %s", format)
+	case prints.FormatMermaid:
+		prints.Mermaid(os.Stdout, data, modulePath, []config.Violation{})
+	case prints.FormatText:
+		prints.Text(os.Stdout, data, modulePath)
 	}
-
-	return nil
 }
