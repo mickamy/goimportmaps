@@ -50,7 +50,7 @@ func LoadByPath(path string) (*Config, error) {
 		for _, imprt := range rule.Imports {
 			imprtRegexp, err := regexp.Compile(imprt)
 			if err != nil {
-				return nil, fmt.Errorf("invalid to regex `%q: %w`", rule.Imports, err)
+				return nil, fmt.Errorf("invalid import pattern `%s`: %w", imprt, err)
 			}
 			rule.CompiledImports = append(rule.CompiledImports, imprtRegexp)
 		}
