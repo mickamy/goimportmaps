@@ -80,7 +80,7 @@ If `handler` imports `infra` directly, the tool will detect:
 You can enforce exact allowed imports:
 
 ```yaml
-allow:
+allowed:
   - source: github.com/your/project/internal/handler
     imports:
       - github.com/your/project/internal/service
@@ -122,7 +122,7 @@ forbidden:
 ### Allowed Mode Example
 
 ```yaml
-allow:
+allowed:
   - source: github.com/your/project/internal/handler
     imports:
       - github.com/your/project/internal/service

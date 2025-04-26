@@ -2,7 +2,7 @@ forbidden:
   - source: internal/.*/handler$
     imports:
       - internal/.*/repository$
-allow:
+allowed:
   - source: internal/.*/handler$
     imports:
       - internal/.*/usecase$

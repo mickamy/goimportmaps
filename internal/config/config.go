@@ -42,7 +42,7 @@ type Rule struct {
 
 type Config struct {
 	Forbidden []Rule `yaml:"forbidden"`
-	Allow     []Rule `yaml:"allow"`
+	Allowed   []Rule `yaml:"allowed"`
 }
 
 func Load() (*Config, error) {
@@ -75,8 +75,8 @@ func LoadByPath(path string) (*Config, error) {
 		}
 	}
 
-	for i := range cfg.Allow {
-		rule := &cfg.Allow[i]
+	for i := range cfg.Allowed {
+		rule := &cfg.Allowed[i]
 
 		if rule.CompiledSource, err = regexp.Compile(rule.Source); err != nil {
 			return nil, fmt.Errorf("invalid source regex `%q: %w`", rule.Source, err)
@@ -145,7 +145,7 @@ func (c *Config) ValidateAllowed(graph goimportmaps.Graph) []Violation {
 	for source, imports := range graph {
 		allowed := false
 
-		for _, rule := range c.Allow {
+		for _, rule := range c.Allowed {
 			if !rule.CompiledSource.MatchString(source) {
 				continue
 			}
