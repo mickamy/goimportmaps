@@ -10,14 +10,16 @@ import (
 	"github.com/mickamy/goimportmaps/internal/cli/graph"
 	"github.com/mickamy/goimportmaps/internal/cli/version"
 	"github.com/mickamy/goimportmaps/internal/config"
+	"github.com/mickamy/goimportmaps/internal/metrics"
 	"github.com/mickamy/goimportmaps/internal/module"
 	"github.com/mickamy/goimportmaps/internal/parser"
 	"github.com/mickamy/goimportmaps/internal/prints"
 )
 
 var (
-	format = "text"
-	mode   = "forbidden"
+	format      = "text"
+	mode        = "forbidden"
+	showMetrics = false
 )
 
 var cmd = &cobra.Command{
@@ -56,6 +58,7 @@ func init() {
 
 	cmd.Flags().StringVarP(&format, "format", "f", "text", "output format (text, mermaid, graphviz or html)")
 	cmd.Flags().StringVarP(&mode, "mode", "m", "forbidden", "check mode (forbidden or allowed)")
+	cmd.Flags().BoolVar(&showMetrics, "metrics", false, "show coupling metrics (overrides config setting)")
 }
 
 func Run(cfg *config.Config, mode config.Mode, format prints.Format, pattern string) {
@@ -73,18 +76,41 @@ func Run(cfg *config.Config, mode config.Mode, format prints.Format, pattern str
 
 	violations := cfg.Validate(data, mode, modulePath)
 
+	// calculate coupling metrics if enabled
+	var couplingAnalysis *metrics.CouplingAnalysis
+	if cfg.Metrics.Enabled || showMetrics {
+		couplingAnalysis = metrics.CalculateCoupling(data)
+	}
+
 	switch format {
 	case prints.FormatGraphviz:
 		prints.Graphviz(os.Stdout, data, modulePath)
 	case prints.FormatHTML:
-		if err := prints.HTML(os.Stdout, data, modulePath, violations); err != nil {
-			fmt.Printf("error: %v\n", err)
-			os.Exit(1)
+		if (cfg.Metrics.Enabled || showMetrics) && couplingAnalysis != nil {
+			if err := prints.HTMLWithMetrics(os.Stdout, data, modulePath, violations, couplingAnalysis,
+				cfg.Metrics.Coupling.MaxEfferent,
+				cfg.Metrics.Coupling.MaxAfferent,
+				cfg.Metrics.Coupling.MaxInstability); err != nil {
+				fmt.Printf("error: %v\n", err)
+				os.Exit(1)
+			}
+		} else {
+			if err := prints.HTML(os.Stdout, data, modulePath, violations); err != nil {
+				fmt.Printf("error: %v\n", err)
+				os.Exit(1)
+			}
 		}
 	case prints.FormatMermaid:
 		prints.Mermaid(os.Stdout, data, modulePath, violations)
 	case prints.FormatText:
-		prints.Text(os.Stdout, data, modulePath)
+		if (cfg.Metrics.Enabled || showMetrics) && couplingAnalysis != nil {
+			prints.TextWithMetrics(os.Stdout, data, modulePath, couplingAnalysis,
+				cfg.Metrics.Coupling.MaxEfferent,
+				cfg.Metrics.Coupling.MaxAfferent,
+				cfg.Metrics.Coupling.MaxInstability)
+		} else {
+			prints.Text(os.Stdout, data, modulePath)
+		}
 	}
 
 	if len(violations) > 0 {
