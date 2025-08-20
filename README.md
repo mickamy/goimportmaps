@@ -18,6 +18,10 @@ undesired package-level coupling.
 - 📊 Visualize internal package dependencies (Mermaid, Graphviz, HTML)
 - 🚨 Detect forbidden imports based on custom rules (`forbidden` mode)
 - 🛡 Enforce allowed imports strictly (`allowed` mode, whitelist style)
+- 📈 **Coupling metrics analysis** (inspired by NDepend)
+  - **Afferent Coupling (Ca)**: Number of packages depending on this package
+  - **Efferent Coupling (Ce)**: Number of packages this package depends on
+  - **Instability (I)**: Ce / (Ca + Ce) ratio (0=stable, 1=unstable)
 - ✅ Output violations with actionable messages
 - 🔍 Highlight architectural drift in pull requests
 - 🧠 Perfect for layered, hexagonal, or clean architecture
@@ -46,10 +50,11 @@ goimportmaps ./internal/...
 
 ### Options
 
-| Option     | Description                                             |
-|------------|---------------------------------------------------------|
-| `--format` | Output format: `text`, `mermaid`, `html`, or `graphviz` |
-| `--mode`   | Validation mode: `forbidden` (default) or `allowed`     |
+| Option      | Description                                             |
+|-------------|---------------------------------------------------------|
+| `--format`  | Output format: `text`, `mermaid`, `html`, or `graphviz` |
+| `--mode`    | Validation mode: `forbidden` (default) or `allowed`     |
+| `--metrics` | Show coupling metrics (overrides config setting)       |
 
 ## Example
 
@@ -103,6 +108,44 @@ graph TD
 
 ---
 
+## Coupling Metrics
+
+Display package coupling metrics to identify architectural issues:
+
+```bash
+# Show metrics in CLI output
+goimportmaps ./... --metrics
+
+# Generate HTML report with metrics dashboard
+goimportmaps ./... --format=html --metrics > metrics-report.html
+```
+
+### Metrics Output Example
+
+```
+📊 Coupling Metrics:
+
+Package                           Ca   Ce      I Status
+internal/cli                       0   11   1.00 🚨
+internal/prints                    2   11   0.85 🚨  
+internal/config                    4    6   0.60 ✅
+
+🚨 Coupling Violations:
+- internal/cli: High efferent coupling (11 > 10), High instability (1.00 > 0.80)
+- internal/prints: High efferent coupling (11 > 10), High instability (0.85 > 0.80)
+```
+
+### Understanding Metrics
+
+- **Ca (Afferent Coupling)**: Higher values indicate packages that are heavily depended upon (stable)
+- **Ce (Efferent Coupling)**: Higher values indicate packages with many dependencies (unstable)
+- **I (Instability)**: 
+  - **0.0** = Completely stable (only used by others)
+  - **1.0** = Completely unstable (only uses others)
+  - **0.5** = Balanced coupling
+
+---
+
 ## Configuration
 
 `.goimportmaps.yaml`
@@ -132,16 +175,39 @@ allowed:
     stdlib: false
 ```
 
+### Metrics Configuration Example
+
+```yaml
+metrics:
+  enabled: true
+  coupling:
+    max_efferent: 10      # Maximum efferent coupling (Ce)
+    max_afferent: 15      # Maximum afferent coupling (Ca)  
+    max_instability: 0.8  # Maximum instability (I)
+    warn_efferent: 7      # Warning threshold for Ce
+    warn_afferent: 10     # Warning threshold for Ca
+    warn_instability: 0.6 # Warning threshold for I
+```
+
 ## HTML Output
 
 Use `--format=html` to generate a standalone static report:
 
 ```bash
+# Basic HTML report
 goimportmaps ./... --format=html > report.html
 
+# HTML report with metrics dashboard
+goimportmaps ./... --format=html --metrics > metrics-report.html
 ```
 
-This report can be viewed in your browser or uploaded as a CI artifact.
+The metrics-enabled HTML report includes:
+- Interactive dependency graph with Mermaid.js
+- Coupling metrics table with color-coded violations
+- Visual instability bars and status indicators
+- Summary cards showing violation counts
+
+Reports can be viewed in your browser or uploaded as CI artifacts.
 
 ## License
 
